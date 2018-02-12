@@ -96,7 +96,7 @@ class DonationAnalytics:
 
     def print_record(self, key):
         """Output one result record."""
-        percentile_amount = str(int(self.running_percentile[key].get_percentile()))
+        percentile_amount = str(int(round(self.running_percentile[key].get_percentile())))
         total_amount = str(int(round(self.running_percentile[key].total_amount)))
         count = str(len(self.running_percentile[key]))
         record = [key.recipient, key.zip_code, str(key.year), percentile_amount, total_amount, count]
@@ -106,10 +106,11 @@ class DonationAnalytics:
         """Process one line from input file. Check whether this line is malformed, and ignore malformed line.
         Return None if this line is ignored, otherwise return corresponding output line.
         """
-        if len(line) == 0:
-            return None
-
         columns = line.split('|')
+
+        if len(line) == 0 or len(columns) < 16:
+            return None    # empty line or malformed line
+
         cmte_id, name, zip_code = columns[0], columns[7], columns[10][:5]
         transaction_dt, transaction_amt = columns[13], columns[14]
         other_id = columns[15]
