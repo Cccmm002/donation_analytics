@@ -96,7 +96,7 @@ class DonationAnalytics:
 
     def print_record(self, key):
         """Output one result record."""
-        percentile_amount = str(int(round(self.running_percentile[key].get_percentile())))
+        percentile_amount = str(int(self.running_percentile[key].get_percentile()))
         total_amount = str(int(round(self.running_percentile[key].total_amount)))
         count = str(len(self.running_percentile[key]))
         record = [key.recipient, key.zip_code, str(key.year), percentile_amount, total_amount, count]
@@ -114,22 +114,25 @@ class DonationAnalytics:
         transaction_dt, transaction_amt = columns[13], columns[14]
         other_id = columns[15]
 
-        if len(other_id) > 0 or len(transaction_amt) == 0 or len(cmte_id) == 0 or len(zip_code) < 5:
+        if len(other_id) > 0 or len(transaction_amt) == 0 or len(cmte_id) == 0 or len(name) == 0 or len(zip_code) < 5:
             return None            # malformed data fields, ignore this line
         transaction_date = string_to_date(transaction_dt)
         if transaction_date is None:
             return None            # 'TRANSACTION_DT' is an invalid date
 
-        if self.repeat_donor(name, zip_code, transaction_date.year):
-            # this record is from a repeat donor in any prior calendar year
-            amount = float(transaction_amt)
-            key = RecipientZipYear(cmte_id, zip_code, transaction_date.year)
-            if key not in self.running_percentile:
-                self.running_percentile[key] = RunningPercentile(self.percentile)
-            self.running_percentile[key].add(amount)
-            return self.print_record(key)
-        else:
-            return None
+        try:
+            if self.repeat_donor(name, zip_code, transaction_date.year):
+                # this record is from a repeat donor in any prior calendar year
+                amount = float(transaction_amt)
+                key = RecipientZipYear(cmte_id, zip_code, transaction_date.year)
+                if key not in self.running_percentile:
+                    self.running_percentile[key] = RunningPercentile(self.percentile)
+                self.running_percentile[key].add(amount)
+                return self.print_record(key)
+            else:
+                return None   # this record is not from a repeat donor
+        except:
+            return None       # exception may comes from malformed line, so just ignore this line
 
 
 def main():
