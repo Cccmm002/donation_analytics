@@ -96,8 +96,8 @@ class DonationAnalytics:
 
     def print_record(self, key):
         """Output one result record."""
-        percentile_amount = str(self.running_percentile[key].get_percentile())
-        total_amount = str(round(self.running_percentile[key].total_amount))
+        percentile_amount = str(int(round(self.running_percentile[key].get_percentile())))
+        total_amount = str(int(round(self.running_percentile[key].total_amount)))
         count = str(len(self.running_percentile[key]))
         record = [key.recipient, key.zip_code, str(key.year), percentile_amount, total_amount, count]
         return '|'.join(record)
